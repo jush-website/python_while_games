@@ -700,13 +700,19 @@ export default function App() {
                 </button>
               </div>
             ) : (
-               <button
-                  onClick={() => setGameState('menu')}
-                  className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-500 transition"
-                >
-                  返回主選單重試
-                </button>
+               <div className="space-y-3">
+                   <button
+                      onClick={() => setGameState('menu')}
+                      className="w-full py-3 bg-blue-600 text-white font-bold rounded-lg hover:bg-blue-500 transition"
+                    >
+                      返回主選單重試
+                    </button>
+                    <p className="text-yellow-400 text-sm font-bold animate-pulse mt-2">
+                        ✨ 獲得 100 分會有特別獎勵喔！ ✨
+                    </p>
+               </div>
             )}
+            
             {score === 100 && (
                 <button
                   onClick={() => setGameState('menu')}
