@@ -6,168 +6,177 @@ const QUESTION_BANK = {
   easy: [
     {
       id: 'e1',
+      // 題目：基礎計數器
       code: [
-        { text: 'i = 1' },
-        { text: 'while i < 4:' },
-        { text: '    print(i)' },
-        { text: '    ', isSlot: true, answer: 'i += 1' }
+        { text: 'day = 1' },
+        { text: 'while day <= 3:' },
+        { text: '    print("Day", day)' },
+        { text: '    ', isSlot: true, answer: 'day += 1' }
       ],
-      options: ['i += 1', 'i -= 1', 'i = 0', 'break'],
+      options: ['day += 1', 'day = 1', 'break', 'continue'],
       wrongFeedback: {
-        'i -= 1': '小心！如果 i 越來越小 (1, 0, -1...)，它永遠都會小於 4，這會造成無限迴圈！',
-        'i = 0': '如果把 i 設為 0，它永遠小於 4，程式會卡住變成無限迴圈。',
-        'break': 'break 會直接強制結束迴圈，這樣只會印出 1，不會印出 2 和 3。'
+        'day = 1': '如果每次都把 day 設回 1，day 永遠不會大於 3，會變成無限迴圈！',
+        'break': 'break 會直接結束迴圈，這樣只會印出 Day 1 就停止了。',
+        'continue': 'continue 會跳回迴圈開頭，導致 day 數值沒變，變成無限迴圈。'
       },
-      output: '1\n2\n3',
-      explanation: '我們需要讓 i 每次增加 1，這樣 i 最終會變成 4，條件 i < 4 才會變成 False 結束迴圈。'
+      output: 'Day 1\nDay 2\nDay 3',
+      explanation: '最基礎的迴圈：記得要在迴圈內改變計數變數，否則會變成無限迴圈。'
     },
     {
       id: 'e2',
+      // 題目：密碼輸入模擬 (條件判斷)
       code: [
-        { text: 'count = 5' },
-        { text: 'while ', isSlot: true, answer: 'count > 0', suffix: ':' }, 
-        { text: '    print(count)' },
-        { text: '    count -= 1' }
+        { text: 'secret = "1234"' },
+        { text: 'guess = ""' },
+        { text: 'while ', isSlot: true, answer: 'guess != secret', suffix: ':' }, 
+        { text: '    guess = "1234"' }, // 模擬使用者輸入正確
+        { text: '    print("Unlocked!")' }
       ],
-      options: ['count > 0', 'count < 5', 'count == 0', 'True'],
+      options: ['guess != secret', 'guess == secret', 'guess > secret', 'True'],
       wrongFeedback: {
-        'count < 5': '初始值 count 是 5。5 並不小於 5，所以迴圈連一次都不會執行喔！',
-        'count == 0': '初始值是 5，不等於 0，所以迴圈不會執行。',
-        'True': 'While True 會變成無限迴圈，因為條件永遠成立，程式停不下來！'
+        'guess == secret': '一開始 guess 是空的，跟 secret 不一樣，所以這個條件一開始就是 False，迴圈完全不會執行。',
+        'True': '這樣會變成無限迴圈，除非裡面有 break，但這題的邏輯是「猜錯就繼續猜」。',
+        'guess > secret': '字串比大小通常不是用來做密碼驗證的邏輯。'
       },
-      output: '5\n4\n3\n2\n1',
-      explanation: '我們希望倒數計時，所以只要 count 還大於 0 就繼續執行。'
+      output: 'Unlocked!',
+      explanation: '這模擬了登入系統：只要「猜測不等於秘密」，就繼續要求輸入；一旦猜對，迴圈條件不成立，就會結束。'
     },
     {
       id: 'e3',
+      // 題目：火箭倒數 (遞減)
       code: [
-        { text: 'x = 0' },
-        { text: 'while x < 3:' },
-        { text: '    ', isSlot: true, answer: 'print(x)' },
-        { text: '    x += 1' }
+        { text: 't = 3' },
+        { text: 'while t > 0:' },
+        { text: '    print(t)' },
+        { text: '    ', isSlot: true, answer: 't -= 1' }
       ],
-      options: ['print(x)', 'input(x)', 'x--', 'pass'],
+      options: ['t -= 1', 't += 1', 't = 0', 'pass'],
       wrongFeedback: {
-        'input(x)': 'input() 是用來等待使用者輸入的，這會暫停程式，且不會自動印出數字。',
-        'x--': 'Python 不支援 x-- 這種寫法喔！這是 C/Java/JS 的語法，Python 要寫 x -= 1。',
-        'pass': 'pass 什麼都不做，所以這個迴圈只會增加 x 的值，螢幕上不會顯示任何東西。'
+        't += 1': '如果 t 越來越大 (3, 4, 5...)，它永遠大於 0，火箭永遠發射不了(無限迴圈)！',
+        't = 0': '這樣只會跑一次迴圈，雖然會停止，但就沒有倒數的效果了。',
+        'pass': 'pass 什麼都不做，t 的值不會變，導致無限迴圈。'
       },
-      output: '0\n1\n2',
-      explanation: '要在終端機顯示變數的值，必須使用 print() 函數。'
+      output: '3\n2\n1',
+      explanation: '倒數計時需要使用遞減 (t -= 1)，直到變數歸零為止。'
     }
   ],
   medium: [
     {
       id: 'm1',
+      // 題目：處理購物車 (List Pop)
       code: [
-        { text: 'n = 0' },
-        { text: 'while n < 5:' },
-        { text: '    n += 1' },
-        { text: '    if n == 3:' },
-        { text: '        ', isSlot: true, answer: 'continue' },
-        { text: '    print(n)' }
+        { text: 'cart = ["Apple", "Milk"]' },
+        { text: 'while ', isSlot: true, answer: 'len(cart) > 0', suffix: ':' },
+        { text: '    item = cart.pop()' },
+        { text: '    print("Bought", item)' }
       ],
-      options: ['continue', 'break', 'exit()', 'n = 5'],
+      options: ['len(cart) > 0', 'cart == []', 'item in cart', 'len(cart) < 2'],
       wrongFeedback: {
-        'break': 'break 會直接終止整個迴圈，所以印出 1 和 2 之後程式就結束了，不會印出 4 和 5。',
-        'exit()': 'exit() 會直接把整個 Python 程式關掉，這太暴力了！',
-        'n = 5': '如果在這邊把 n 設為 5，雖然迴圈會結束，但邏輯不對，而且 3 不會被跳過而是被印出來(如果順序不同的話)。'
+        'cart == []': '一開始購物車有東西，所以「等於空列表」是 False，迴圈不會執行。',
+        'item in cart': 'item 變數在迴圈開始前還沒定義，這樣寫會報錯 (NameError)。',
+        'len(cart) < 2': '這個條件邏輯相反了，我們是要在「還有東西」的時候執行。'
       },
-      output: '1\n2\n4\n5',
-      explanation: 'continue 指令會跳過「當次」迴圈剩下的程式碼，直接回到迴圈開頭進行下一次迭代。'
+      output: 'Bought Milk\nBought Apple',
+      explanation: '這展示了如何用 while 迴圈處理清單：只要清單長度大於 0 (或寫 while cart:)，就不斷取出物品直到清空。'
     },
     {
       id: 'm2',
+      // 題目：跳過奇數 (Continue & Modulo)
       code: [
-        { text: 'i = 1' },
-        { text: 'while True:' },
-        { text: '    print(i)' },
-        { text: '    i += 1' },
-        { text: '    if i > 3:' },
-        { text: '        ', isSlot: true, answer: 'break' }
+        { text: 'n = 0' },
+        { text: 'while n < 4:' },
+        { text: '    n += 1' },
+        { text: '    if n % 2 == 1:' },
+        { text: '        ', isSlot: true, answer: 'continue' },
+        { text: '    print(n)' }
       ],
-      options: ['break', 'stop', 'continue', 'return'],
+      options: ['continue', 'break', 'pass', 'n -= 1'],
       wrongFeedback: {
-        'stop': 'Python 沒有 stop 這個關鍵字喔！',
-        'continue': 'continue 會跳回迴圈開頭，導致 i 不斷增加但迴圈永遠不會停止 (無限迴圈)。',
-        'return': 'return 只能用在函式 (def) 裡面，這裡只是普通的腳本，不能用 return。'
+        'break': 'break 會直接停止迴圈，遇到第一個奇數 1 就停了，什麼都不會印出來。',
+        'pass': 'pass 會繼續往下執行，所以奇數也會被印出來 (1, 2, 3, 4)，不符合只印偶數的要求。',
+        'n -= 1': '在迴圈裡把 n 減回去，加上前面的 n += 1，n 的值會卡住不變，變成無限迴圈。'
       },
-      output: '1\n2\n3',
-      explanation: 'While True 是無限迴圈的起手式，必須搭配 break 關鍵字在特定條件下跳出迴圈。'
+      output: '2\n4',
+      explanation: 'n % 2 == 1 代表是奇數。使用 continue 可以跳過本次迴圈剩下的 print 指令，只印出偶數。'
     },
     {
       id: 'm3',
+      // 題目：存款目標 (累加與條件)
       code: [
-        { text: 'total = 0' },
-        { text: 'x = 1' },
-        { text: 'while x <= 4:' },
-        { text: '    ', isSlot: true, answer: 'total += x' },
-        { text: '    x += 1' },
-        { text: 'print(total)' }
+        { text: 'money = 0' },
+        { text: 'goal = 30' },
+        { text: 'while ', isSlot: true, answer: 'money < goal', suffix: ':' },
+        { text: '    money += 10' },
+        { text: 'print("Rich!")' }
       ],
-      options: ['total += x', 'total = x', 'x += total', 'print(x)'],
+      options: ['money < goal', 'money > goal', 'money == goal', 'True'],
       wrongFeedback: {
-        'total = x': '這樣會把 total 的值「覆蓋」成 x，而不是累加。最後 total 只會等於最後一個 x 的值 (4)。',
-        'x += total': '這是在增加 x 的值，而不是計算總和，會導致迴圈次數變少或邏輯錯誤。',
-        'print(x)': '這只會印出數字，不會把數字加到 total 變數中。'
+        'money > goal': '一開始 0 不大於 30，條件為 False，迴圈不會執行，存不到錢。',
+        'money == goal': '0 不等於 30，條件為 False，直接結束。',
+        'True': '這會變成無限存款，永遠停不下來！'
       },
-      output: '10',
-      explanation: '累加程式 (Accumulator) 需要將每次的變數值加到總和變數中：total = total + x。'
+      output: 'Rich!',
+      explanation: '這是典型的「達成目標前持續執行」。只要錢還沒存夠 (小於目標)，就繼續存錢。'
     }
   ],
   hard: [
     {
       id: 'h1',
+      // 題目：計算階乘 (數學邏輯)
       code: [
-        { text: 'text = "Python"' },
-        { text: 'i = 0' },
-        { text: 'while ', isSlot: true, answer: 'i < len(text)', suffix: ':' },
-        { text: '    print(text[i])' },
-        { text: '    i += 2' }
+        { text: 'n = 5' },
+        { text: 'fact = 1' },
+        { text: 'while n > 0:' },
+        { text: '    ', isSlot: true, answer: 'fact *= n' },
+        { text: '    n -= 1' }
       ],
-      options: ['i < len(text)', 'i <= 10', 'text[i]', 'True'],
+      options: ['fact *= n', 'fact += n', 'n *= fact', 'fact = n'],
       wrongFeedback: {
-        'i <= 10': '字串長度只有 6，如果 i 跑到 6, 8, 10，會發生 IndexError (索引超出範圍)。',
-        'text[i]': '條件判斷必須是布林值或可判斷真假的值。雖然字串非空為 True，但這裡邏輯怪怪的，且會有索引錯誤風險。',
-        'True': '如果是無限迴圈，當 i 超過字串長度時，text[i] 會讓程式崩潰 (IndexError)。'
+        'fact += n': '這是累加 (Summation)，不是階乘 (Factorial)。階乘需要用乘法。',
+        'n *= fact': '我們是要計算 fact，不是改變 n 的縮放方式。',
+        'fact = n': '這樣會覆蓋掉 fact 之前累積的值，最後結果只會等於 1。'
       },
-      output: 'P\nt\no',
-      explanation: '我們要確保索引 i 不會超過字串長度 (len(text))，否則會報錯。'
+      output: '120', // 5*4*3*2*1
+      explanation: '階乘 (Factorial) 是連乘積。fact *= n 等同於 fact = fact * n，這是累積乘積的標準寫法。'
     },
     {
       id: 'h2',
+      // 題目：Collatz 猜想 (複雜條件)
       code: [
-        { text: 'a, b = 0, 1' },
-        { text: 'while a < 10:' },
-        { text: '    print(a)' },
-        { text: '    ', isSlot: true, answer: 'a, b = b, a+b' }
+        { text: 'n = 6' },
+        { text: 'while ', isSlot: true, answer: 'n != 1', suffix: ':' },
+        { text: '    if n % 2 == 0:' },
+        { text: '        n = n // 2' },
+        { text: '    else:' },
+        { text: '        n = 3 * n + 1' }
       ],
-      options: ['a, b = b, a+b', 'a = a + 1', 'b = a + b', 'a = b'],
+      options: ['n != 1', 'n > 10', 'n == 1', 'n % 2 == 0'],
       wrongFeedback: {
-        'a = a + 1': '這是普通的遞增數列 (0, 1, 2...)，不是費氏數列。',
-        'b = a + b': '費氏數列需要同時更新兩個數。如果只更新 b，a 的值沒有變或變動錯誤，無法產生正確序列。',
-        'a = b': '這樣會遺失前一個數的值，導致無法計算下一個數 (需要前兩個數相加)。'
+        'n > 10': '6 不大於 10，迴圈連一次都不會跑。',
+        'n == 1': '6 不等於 1，條件為 False，直接結束。',
+        'n % 2 == 0': '這只能保證 n 是偶數時執行，但 Collatz 猜想過程中 n 會變成奇數，這時迴圈就會意外中斷。'
       },
-      output: '0\n1\n1\n2\n3\n5\n8',
-      explanation: '費氏數列：下一個數是前兩個數的總和。Python 支援多重賦值 (Tuple Unpacking) 可以同時更新 a 和 b。'
+      output: '(Loops until n is 1)',
+      explanation: 'Collatz 猜想：如果是偶數除以 2，奇數乘 3 加 1，最終都會回到 1。所以迴圈條件是「只要不等於 1 就繼續」。'
     },
     {
       id: 'h3',
+      // 題目：反轉字串 (索引操作)
       code: [
-        { text: 'x = 5' },
-        { text: 'while x > 0:' },
-        { text: '    x -= 1' },
-        { text: 'else:' },
-        { text: '    ', isSlot: true, answer: 'print("Done")' }
+        { text: 's = "ABC"' },
+        { text: 'i = len(s) - 1' }, // Index starts at 2
+        { text: 'while i >= 0:' },
+        { text: '    print(s[i])' },
+        { text: '    ', isSlot: true, answer: 'i -= 1' }
       ],
-      options: ['print("Done")', 'break', 'x = 5', 'continue'],
+      options: ['i -= 1', 'i += 1', 'i = 0', 'break'],
       wrongFeedback: {
-        'break': 'break 通常用在迴圈內。如果在 else 裡寫 break 雖然語法上可能不報錯(視上下文)，但在這裡邏輯不通。',
-        'x = 5': '迴圈剛結束，如果又把 x 設為 5，只是單純賦值，沒有輸出結果。',
-        'continue': 'continue 只能在迴圈「內部」使用，不能用在 else 區塊中，會發生 SyntaxError。'
+        'i += 1': 'i 會變大 (2, 3, 4...)，超過字串長度會發生 IndexError (索引錯誤)！',
+        'i = 0': '這會造成死循環，而且邏輯上無法遍歷前面的字元。',
+        'break': '印出最後一個字元 "C" 後就結束了，無法印出 "B" 和 "A"。'
       },
-      output: 'Done',
-      explanation: 'Python 的 while 迴圈可以搭配 else。當迴圈「正常結束」(不是被 break 中斷) 時，會執行 else 區塊。'
+      output: 'C\nB\nA',
+      explanation: '我們要從字串尾端往前讀取，所以索引變數 i 必須每次遞減，直到小於 0 為止。'
     }
   ]
 };
@@ -199,12 +208,25 @@ export default function App() {
   const [draggedItem, setDraggedItem] = useState(null);
   const [isTailwindLoaded, setIsTailwindLoaded] = useState(false);
 
-  // --- Style Injection with Loading State ---
-  // 修正：增加載入狀態監測，確保 Tailwind 載入完畢才顯示畫面
+  // --- Style Injection with FORCED 2-Second Loading State ---
   useEffect(() => {
-    // 如果 window.tailwind 已經存在，表示已經載入過
+    // 記錄開始載入的時間
+    const startTime = Date.now();
+    const minLoadTime = 2000; // 最小載入時間：2秒
+
+    // 定義完成載入的處理函式
+    const finishLoading = () => {
+      const elapsedTime = Date.now() - startTime;
+      const remainingTime = Math.max(0, minLoadTime - elapsedTime);
+      
+      // 無論腳本載入多快，都至少等待 remainingTime，湊滿 2 秒
+      setTimeout(() => {
+        setIsTailwindLoaded(true);
+      }, remainingTime);
+    };
+
     if (window.tailwind) {
-      setIsTailwindLoaded(true);
+      finishLoading();
       return;
     }
 
@@ -219,12 +241,10 @@ export default function App() {
       document.head.appendChild(script);
     }
 
-    // 監聽載入完成事件
-    const handleLoad = () => setIsTailwindLoaded(true);
-    script.addEventListener('load', handleLoad);
+    script.addEventListener('load', finishLoading);
 
     return () => {
-      script.removeEventListener('load', handleLoad);
+      script.removeEventListener('load', finishLoading);
     };
   }, []);
 
