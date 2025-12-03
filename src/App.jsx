@@ -1,12 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, RotateCcw, HelpCircle, Trophy, CheckCircle, XCircle, Award, Download, ChevronRight, Code, AlertTriangle, Loader2 } from 'lucide-react';
+import { Play, RotateCcw, HelpCircle, Trophy, CheckCircle, XCircle, Award, Download, ChevronRight, Code, AlertTriangle, Loader2, Lock } from 'lucide-react';
 
 // --- 題庫資料 (Python While Loop) ---
 const QUESTION_BANK = {
   easy: [
     {
       id: 'e1',
-      // 題目：基礎計數器
       code: [
         { text: 'day = 1' },
         { text: 'while day <= 3:' },
@@ -24,12 +23,11 @@ const QUESTION_BANK = {
     },
     {
       id: 'e2',
-      // 題目：密碼輸入模擬 (條件判斷)
       code: [
         { text: 'secret = "1234"' },
         { text: 'guess = ""' },
         { text: 'while ', isSlot: true, answer: 'guess != secret', suffix: ':' }, 
-        { text: '    guess = "1234"' }, // 模擬使用者輸入正確
+        { text: '    guess = "1234"' },
         { text: '    print("Unlocked!")' }
       ],
       options: ['guess != secret', 'guess == secret', 'guess > secret', 'True'],
@@ -43,7 +41,6 @@ const QUESTION_BANK = {
     },
     {
       id: 'e3',
-      // 題目：火箭倒數 (遞減)
       code: [
         { text: 't = 3' },
         { text: 'while t > 0:' },
@@ -63,7 +60,6 @@ const QUESTION_BANK = {
   medium: [
     {
       id: 'm1',
-      // 題目：處理購物車 (List Pop)
       code: [
         { text: 'cart = ["Apple", "Milk"]' },
         { text: 'while ', isSlot: true, answer: 'len(cart) > 0', suffix: ':' },
@@ -81,7 +77,6 @@ const QUESTION_BANK = {
     },
     {
       id: 'm2',
-      // 題目：跳過奇數 (Continue & Modulo)
       code: [
         { text: 'n = 0' },
         { text: 'while n < 4:' },
@@ -101,7 +96,6 @@ const QUESTION_BANK = {
     },
     {
       id: 'm3',
-      // 題目：存款目標 (累加與條件)
       code: [
         { text: 'money = 0' },
         { text: 'goal = 30' },
@@ -122,7 +116,6 @@ const QUESTION_BANK = {
   hard: [
     {
       id: 'h1',
-      // 題目：計算階乘 (數學邏輯)
       code: [
         { text: 'n = 5' },
         { text: 'fact = 1' },
@@ -136,12 +129,11 @@ const QUESTION_BANK = {
         'n *= fact': '我們是要計算 fact，不是改變 n 的縮放方式。',
         'fact = n': '這樣會覆蓋掉 fact 之前累積的值，最後結果只會等於 1。'
       },
-      output: '120', // 5*4*3*2*1
+      output: '120',
       explanation: '階乘 (Factorial) 是連乘積。fact *= n 等同於 fact = fact * n，這是累積乘積的標準寫法。'
     },
     {
       id: 'h2',
-      // 題目：Collatz 猜想 (複雜條件)
       code: [
         { text: 'n = 6' },
         { text: 'while ', isSlot: true, answer: 'n != 1', suffix: ':' },
@@ -161,10 +153,9 @@ const QUESTION_BANK = {
     },
     {
       id: 'h3',
-      // 題目：反轉字串 (索引操作)
       code: [
         { text: 's = "ABC"' },
-        { text: 'i = len(s) - 1' }, // Index starts at 2
+        { text: 'i = len(s) - 1' },
         { text: 'while i >= 0:' },
         { text: '    print(s[i])' },
         { text: '    ', isSlot: true, answer: 'i -= 1' }
@@ -181,7 +172,6 @@ const QUESTION_BANK = {
   ]
 };
 
-// --- 隨機選題函數 ---
 const getRandomQuestions = (difficulty) => {
   const pool = QUESTION_BANK[difficulty];
   let selected = [];
@@ -195,7 +185,6 @@ const getRandomQuestions = (difficulty) => {
   return selected;
 };
 
-// --- 主組件 ---
 export default function App() {
   const [gameState, setGameState] = useState('menu'); 
   const [difficulty, setDifficulty] = useState('easy');
@@ -205,21 +194,46 @@ export default function App() {
   const [hints, setHints] = useState(3);
   const [feedback, setFeedback] = useState(null); 
   const [userName, setUserName] = useState('');
+  
+  // Drag and Drop States
   const [draggedItem, setDraggedItem] = useState(null);
+  
+  // Touch Drag State (Mobile)
+  const [touchDrag, setTouchDrag] = useState({ active: false, x: 0, y: 0, item: null });
+
   const [isTailwindLoaded, setIsTailwindLoaded] = useState(false);
 
-  // --- Style Injection with FORCED 2-Second Loading State ---
-  useEffect(() => {
-    // 記錄開始載入的時間
-    const startTime = Date.now();
-    const minLoadTime = 2000; // 最小載入時間：2秒
+  // --- 新增：解鎖狀態 (從 localStorage 讀取) ---
+  const [unlockedLevels, setUnlockedLevels] = useState(() => {
+    try {
+      if (typeof window !== 'undefined') {
+        const saved = localStorage.getItem('python_master_unlocked');
+        // 預設解鎖 easy
+        return saved ? JSON.parse(saved) : ['easy'];
+      }
+    } catch (e) {
+      console.error('LocalStorage read error', e);
+    }
+    return ['easy'];
+  });
 
-    // 定義完成載入的處理函式
+  // --- 新增：當 unlockedLevels 改變時寫入 localStorage ---
+  useEffect(() => {
+    try {
+        localStorage.setItem('python_master_unlocked', JSON.stringify(unlockedLevels));
+    } catch (e) {
+        console.error('LocalStorage write error', e);
+    }
+  }, [unlockedLevels]);
+
+  useEffect(() => {
+    const startTime = Date.now();
+    const minLoadTime = 2000;
+
     const finishLoading = () => {
       const elapsedTime = Date.now() - startTime;
       const remainingTime = Math.max(0, minLoadTime - elapsedTime);
       
-      // 無論腳本載入多快，都至少等待 remainingTime，湊滿 2 秒
       setTimeout(() => {
         setIsTailwindLoaded(true);
       }, remainingTime);
@@ -248,7 +262,6 @@ export default function App() {
     };
   }, []);
 
-  // 自定義樣式 (字體、動畫)
   const customStyles = `
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
     
@@ -257,6 +270,8 @@ export default function App() {
       background-color: #0f172a; 
       color: white;
       margin: 0;
+      padding: 0;
+      overflow-x: hidden; /* 防止手機左右滑動 */
     }
     
     @keyframes fade-in {
@@ -266,10 +281,22 @@ export default function App() {
     .animate-fade-in {
       animation: fade-in 0.5s ease-out forwards;
     }
+    
+    /* 鎖頭晃動動畫 */
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-5px); }
+      75% { transform: translateX(5px); }
+    }
+    .shake-on-hover:hover .lock-icon {
+      animation: shake 0.5s ease-in-out;
+    }
   `;
 
-  // --- 遊戲邏輯函數 ---
   const startGame = (diff) => {
+    // 防止啟動未解鎖的難度
+    if (!unlockedLevels.includes(diff)) return;
+
     setDifficulty(diff);
     setQuestions(getRandomQuestions(diff));
     setCurrentQIndex(0);
@@ -322,6 +349,14 @@ export default function App() {
       setFeedback(null);
     } else {
       setGameState('finished');
+      
+      // --- 新增：通關解鎖邏輯 ---
+      // 只要完成關卡（到達這裡表示已完成5題），就解鎖下一級
+      if (difficulty === 'easy' && !unlockedLevels.includes('medium')) {
+          setUnlockedLevels(prev => [...prev, 'medium']);
+      } else if (difficulty === 'medium' && !unlockedLevels.includes('hard')) {
+          setUnlockedLevels(prev => [...prev, 'hard']);
+      }
     }
   };
 
@@ -335,7 +370,41 @@ export default function App() {
     }
   };
 
-  // --- 載入畫面 (防止白畫面閃爍) ---
+  // --- Mobile Touch Drag Handlers ---
+  const handleTouchStart = (e, item) => {
+    const touch = e.touches[0];
+    setDraggedItem(item);
+    setTouchDrag({
+      active: true,
+      x: touch.clientX,
+      y: touch.clientY,
+      item: item
+    });
+  };
+
+  const handleTouchMove = (e) => {
+    if (!touchDrag.active) return;
+    const touch = e.touches[0];
+    setTouchDrag(prev => ({ ...prev, x: touch.clientX, y: touch.clientY }));
+  };
+
+  const handleTouchEnd = (e) => {
+    if (!touchDrag.active) return;
+    
+    const touch = e.changedTouches[0];
+    const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
+    
+    const slotElement = elements.find(el => el.getAttribute('data-type') === 'slot');
+    
+    if (slotElement) {
+        handleSlotFill(touchDrag.item);
+    }
+    
+    setTouchDrag({ active: false, x: 0, y: 0, item: null });
+    setDraggedItem(null);
+  };
+
+  // --- 載入畫面 ---
   if (!isTailwindLoaded) {
     return (
       <div style={{
@@ -347,8 +416,16 @@ export default function App() {
         alignItems: 'center',
         justifyContent: 'center',
         color: 'white',
-        fontFamily: 'sans-serif'
+        fontFamily: 'sans-serif',
+        margin: 0, 
+        padding: 0,
+        position: 'fixed', 
+        top: 0,
+        left: 0,
+        zIndex: 9999
       }}>
+        <style>{`body { margin: 0; padding: 0; background-color: #0f172a; overflow: hidden; }`}</style>
+        
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Loader2 style={{ animation: 'spin 1s linear infinite' }} />
           <span>載入資源中...</span>
@@ -377,18 +454,35 @@ export default function App() {
             
             <div className="space-y-4">
               <p className="text-sm text-slate-500 mb-2">請選擇難度開始：</p>
-              {['easy', 'medium', 'hard'].map((diff) => (
-                <button
-                  key={diff}
-                  onClick={() => startGame(diff)}
-                  className="w-full py-4 px-6 rounded-xl bg-slate-700 hover:bg-blue-600 transition-all duration-300 flex items-center justify-between group border border-slate-600 hover:border-blue-400"
-                >
-                  <span className="capitalize font-semibold text-lg">
-                    {diff === 'easy' ? '簡單 (新手)' : diff === 'medium' ? '中等 (熟練)' : '困難 (專家)'}
-                  </span>
-                  <Play className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                </button>
-              ))}
+              {['easy', 'medium', 'hard'].map((diff) => {
+                const isUnlocked = unlockedLevels.includes(diff);
+                return (
+                  <button
+                    key={diff}
+                    onClick={() => startGame(diff)}
+                    disabled={!isUnlocked}
+                    className={`
+                        w-full py-4 px-6 rounded-xl transition-all duration-300 flex items-center justify-between group border
+                        ${isUnlocked 
+                            ? 'bg-slate-700 hover:bg-blue-600 border-slate-600 hover:border-blue-400 cursor-pointer' 
+                            : 'bg-slate-800/50 border-slate-800 text-slate-600 cursor-not-allowed shake-on-hover'
+                        }
+                    `}
+                  >
+                    <div className="flex items-center gap-3">
+                        {isUnlocked ? (
+                            <div className={`w-2 h-2 rounded-full ${diff === 'easy' ? 'bg-green-400' : diff === 'medium' ? 'bg-yellow-400' : 'bg-red-400'}`}></div>
+                        ) : (
+                            <Lock size={18} className="lock-icon" />
+                        )}
+                        <span className="capitalize font-semibold text-lg">
+                        {diff === 'easy' ? '簡單 (新手)' : diff === 'medium' ? '中等 (熟練)' : '困難 (專家)'}
+                        </span>
+                    </div>
+                    {isUnlocked && <Play className="w-5 h-5 opacity-0 group-hover:opacity-100 transition-opacity" />}
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -406,6 +500,18 @@ export default function App() {
             <p className="mb-8 text-slate-300">
               {score === 100 ? '太神了！完美的 Python 大師！' : '不錯的嘗試！再接再厲！'}
             </p>
+            
+            {/* 新增：顯示解鎖訊息 */}
+            {score > 0 && difficulty === 'easy' && !unlockedLevels.includes('medium') && (
+                <div className="mb-6 p-3 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-400 font-bold animate-pulse">
+                    🎉 解鎖「中等」難度！
+                </div>
+            )}
+            {score > 0 && difficulty === 'medium' && !unlockedLevels.includes('hard') && (
+                 <div className="mb-6 p-3 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-400 font-bold animate-pulse">
+                    🔥 解鎖「困難」難度！
+                 </div>
+            )}
 
             {score === 100 ? (
               <div className="space-y-4">
@@ -434,6 +540,16 @@ export default function App() {
                   返回主選單重試
                 </button>
             )}
+            
+            {/* 如果完成了但不是滿分，也提供返回按鈕 */}
+            {score === 100 && (
+                <button
+                  onClick={() => setGameState('menu')}
+                  className="w-full mt-3 py-3 bg-slate-700 text-white font-bold rounded-lg hover:bg-slate-600 transition"
+                >
+                  返回主選單
+                </button>
+            )}
           </div>
         </div>
       );
@@ -449,6 +565,23 @@ export default function App() {
 
     return (
       <div className="min-h-screen bg-slate-900 text-slate-200 flex flex-col items-center p-4">
+        {/* Mobile Drag Ghost Element */}
+        {touchDrag.active && (
+            <div style={{
+                position: 'fixed',
+                left: touchDrag.x,
+                top: touchDrag.y,
+                transform: 'translate(-50%, -50%)',
+                zIndex: 9999,
+                pointerEvents: 'none',
+                opacity: 0.8
+            }}>
+                <div className="px-4 py-2 rounded-lg font-mono text-sm bg-blue-600 text-white shadow-xl border border-blue-400">
+                    {touchDrag.item}
+                </div>
+            </div>
+        )}
+
         <div className="w-full max-w-2xl flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700">
           <div className="flex items-center gap-4">
              <div className="flex flex-col">
@@ -485,6 +618,7 @@ export default function App() {
 
                       {line.isSlot && (
                           <div 
+                              data-type="slot" // 關鍵：用於觸控放開時的偵測
                               onDragOver={(e) => e.preventDefault()}
                               onDrop={(e) => {
                                   e.preventDefault();
@@ -530,7 +664,7 @@ export default function App() {
                   ) : (
                      <div className="text-slate-400 text-sm flex items-center h-full pt-2">
                          <span className="hidden md:inline">💡 </span> 
-                         拖曳下方方塊至程式碼缺口處
+                         拖曳(或點擊)下方方塊至程式碼缺口處
                      </div>
                   )}
 
@@ -572,8 +706,12 @@ export default function App() {
                               draggable
                               onDragStart={() => setDraggedItem(opt)}
                               onClick={() => handleSlotFill(opt)}
+                              // 新增 Touch Events 支援手機拖曳
+                              onTouchStart={(e) => handleTouchStart(e, opt)}
+                              onTouchMove={handleTouchMove}
+                              onTouchEnd={handleTouchEnd}
                               className={`
-                                  px-4 py-2 rounded-lg font-mono text-sm cursor-grab active:cursor-grabbing border transition-all hover:scale-105 shadow-sm
+                                  px-4 py-2 rounded-lg font-mono text-sm cursor-grab active:cursor-grabbing border transition-all hover:scale-105 shadow-sm select-none touch-none
                                   ${currentQ.currentSlotValue === opt 
                                       ? 'bg-slate-700 border-slate-600 text-slate-500 opacity-50' 
                                       : 'bg-slate-700 border-slate-600 hover:bg-slate-600 text-blue-200 border-b-2 border-b-slate-900'
