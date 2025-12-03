@@ -2,186 +2,354 @@ import React, { useState, useEffect, useRef } from 'react';
 import { Play, RotateCcw, HelpCircle, Trophy, CheckCircle, XCircle, Award, Download, ChevronRight, Code, AlertTriangle, Loader2, Lock } from 'lucide-react';
 
 // --- 題庫資料 (Python While Loop) ---
+// 每個難度 15 題，包含 if, 巢狀 if, 以及各種 while 應用
 const QUESTION_BANK = {
   easy: [
+    // 1-5: 基礎計數與累加
     {
       id: 'e1',
-      code: [
-        { text: 'day = 1' },
-        { text: 'while day <= 3:' },
-        { text: '    print("Day", day)' },
-        { text: '    ', isSlot: true, answer: 'day += 1' }
-      ],
-      options: ['day += 1', 'day = 1', 'break', 'continue'],
-      wrongFeedback: {
-        'day = 1': '如果每次都把 day 設回 1，day 永遠不會大於 3，會變成無限迴圈！',
-        'break': 'break 會直接結束迴圈，這樣只會印出 Day 1 就停止了。',
-        'continue': 'continue 會跳回迴圈開頭，導致 day 數值沒變，變成無限迴圈。'
-      },
-      output: 'Day 1\nDay 2\nDay 3',
-      explanation: '最基礎的迴圈：記得要在迴圈內改變計數變數，否則會變成無限迴圈。'
+      code: [{text: 'i = 1'}, {text: 'while i <= 3:'}, {text: '    print(i)'}, {text: '    ', isSlot: true, answer: 'i += 1'}],
+      options: ['i += 1', 'i = 1', 'break', 'i -= 1'],
+      output: '1\n2\n3',
+      explanation: '基礎迴圈：記得增加計數器避免死迴圈。'
     },
     {
       id: 'e2',
-      code: [
-        { text: 'secret = "1234"' },
-        { text: 'guess = ""' },
-        { text: 'while ', isSlot: true, answer: 'guess != secret', suffix: ':' }, 
-        { text: '    guess = "1234"' },
-        { text: '    print("Unlocked!")' }
-      ],
-      options: ['guess != secret', 'guess == secret', 'guess > secret', 'True'],
-      wrongFeedback: {
-        'guess == secret': '一開始 guess 是空的，跟 secret 不一樣，所以這個條件一開始就是 False，迴圈完全不會執行。',
-        'True': '這樣會變成無限迴圈，除非裡面有 break，但這題的邏輯是「猜錯就繼續猜」。',
-        'guess > secret': '字串比大小通常不是用來做密碼驗證的邏輯。'
-      },
-      output: 'Unlocked!',
-      explanation: '這模擬了登入系統：只要「猜測不等於秘密」，就繼續要求輸入；一旦猜對，迴圈條件不成立，就會結束。'
+      code: [{text: 'x = 5'}, {text: 'while x > 0:'}, {text: '    print(x)'}, {text: '    ', isSlot: true, answer: 'x -= 1'}],
+      options: ['x -= 1', 'x += 1', 'x = 0', 'pass'],
+      output: '5\n4\n3\n2\n1',
+      explanation: '倒數計時：每次將變數減 1。'
     },
     {
       id: 'e3',
-      code: [
-        { text: 't = 3' },
-        { text: 'while t > 0:' },
-        { text: '    print(t)' },
-        { text: '    ', isSlot: true, answer: 't -= 1' }
-      ],
-      options: ['t -= 1', 't += 1', 't = 0', 'pass'],
-      wrongFeedback: {
-        't += 1': '如果 t 越來越大 (3, 4, 5...)，它永遠大於 0，火箭永遠發射不了(無限迴圈)！',
-        't = 0': '這樣只會跑一次迴圈，雖然會停止，但就沒有倒數的效果了。',
-        'pass': 'pass 什麼都不做，t 的值不會變，導致無限迴圈。'
-      },
-      output: '3\n2\n1',
-      explanation: '倒數計時需要使用遞減 (t -= 1)，直到變數歸零為止。'
+      code: [{text: 'total = 0'}, {text: 'n = 1'}, {text: 'while n <= 3:'}, {text: '    ', isSlot: true, answer: 'total += n'}, {text: '    n += 1'}],
+      options: ['total += n', 'total = n', 'n += total', 'print(n)'],
+      output: '(total becomes 6)',
+      explanation: '累加器：將 n 的值加入 total 中。'
+    },
+    {
+      id: 'e4',
+      code: [{text: 'msg = ""'}, {text: 'while len(msg) < 3:'}, {text: '    ', isSlot: true, answer: 'msg += "a"'}, {text: 'print(msg)'}],
+      options: ['msg += "a"', 'msg = "a"', 'msg + "a"', 'break'],
+      output: 'aaa',
+      explanation: '字串串接：在迴圈中讓字串變長。'
+    },
+    {
+      id: 'e5',
+      code: [{text: 'x = 0'}, {text: 'while x < 5:'}, {text: '    x += 2'}, {text: '    ', isSlot: true, answer: 'print(x)'}],
+      options: ['print(x)', 'print(i)', 'x -= 1', 'continue'],
+      output: '2\n4\n6',
+      explanation: '在迴圈內部變更變數後印出。'
+    },
+    // 6-10: 簡單條件與 break
+    {
+      id: 'e6',
+      code: [{text: 'n = 1'}, {text: 'while True:'}, {text: '    if n == 3:'}, {text: '        ', isSlot: true, answer: 'break'}, {text: '    n += 1'}],
+      options: ['break', 'continue', 'stop', 'exit'],
+      output: '(Loop stops)',
+      explanation: '使用 break 跳出無限迴圈 (While True)。'
+    },
+    {
+      id: 'e7',
+      code: [{text: 'pw = ""'}, {text: 'while pw != "123":'}, {text: '    ', isSlot: true, answer: 'pw = input()'}],
+      options: ['pw = input()', 'print(pw)', 'pw == "123"', 'break'],
+      output: '(Waits for input)',
+      explanation: '模擬輸入密碼，直到輸入正確為止。'
+    },
+    {
+      id: 'e8',
+      code: [{text: 'i = 0'}, {text: 'while i < 5:'}, {text: '    i += 1'}, {text: '    if i == 3:'}, {text: '        ', isSlot: true, answer: 'continue'}, {text: '    print(i)'}],
+      options: ['continue', 'break', 'pass', 'return'],
+      output: '1\n2\n4\n5',
+      explanation: 'continue 會跳過本次迴圈剩餘程式碼 (不印出 3)。'
+    },
+    {
+      id: 'e9',
+      code: [{text: 'hp = 100'}, {text: 'while hp > 0:'}, {text: '    print("Alive")'}, {text: '    ', isSlot: true, answer: 'hp -= 50'}],
+      options: ['hp -= 50', 'hp += 10', 'hp == 0', 'break'],
+      output: 'Alive\nAlive',
+      explanation: '遊戲血量模擬：扣血直到歸零。'
+    },
+    {
+      id: 'e10',
+      code: [{text: 'n = 2'}, {text: 'while ', isSlot: true, answer: 'n <= 10', suffix: ':'}, {text: '    print(n)'}, {text: '    n += 2'}],
+      options: ['n <= 10', 'n == 10', 'n < 2', 'True'],
+      output: '2\n4\n6\n8\n10',
+      explanation: '設定迴圈條件以印出 2 到 10 的偶數。'
+    },
+    // 11-15: 基礎 IF 應用
+    {
+      id: 'e11',
+      code: [{text: 'x = 1'}, {text: 'while x < 4:'}, {text: '    if x == 2:'}, {text: '        print("Two")'}, {text: '    ', isSlot: true, answer: 'x += 1'}],
+      options: ['x += 1', 'x -= 1', 'print(x)', 'break'],
+      output: '(Prints Two at x=2)',
+      explanation: '在迴圈中使用 if 判斷特定數值。'
+    },
+    {
+      id: 'e12',
+      code: [{text: 'run = True'}, {text: 'while run:'}, {text: '    print("Go")'}, {text: '    ', isSlot: true, answer: 'run = False'}],
+      options: ['run = False', 'break', 'run == False', 'continue'],
+      output: 'Go',
+      explanation: '使用布林旗標 (Flag) 控制迴圈結束。'
+    },
+    {
+      id: 'e13',
+      code: [{text: 'k = 0'}, {text: 'while k < 3:'}, {text: '    print("Ha")'}, {text: '    ', isSlot: true, answer: 'k = k + 1'}],
+      options: ['k = k + 1', 'k = k - 1', 'k = 0', 'k * 1'],
+      output: 'Ha\nHa\nHa',
+      explanation: 'k = k + 1 與 k += 1 意義相同，都是計數器。'
+    },
+    {
+      id: 'e14',
+      code: [{text: 'x = 10'}, {text: 'while x > 5:'}, {text: '    if x % 2 == 0:'}, {text: '        print(x)'}, {text: '    ', isSlot: true, answer: 'x -= 1'}],
+      options: ['x -= 1', 'x += 1', 'break', 'continue'],
+      output: '10\n8\n6',
+      explanation: '結合倒數與偶數判斷 (Modulo)。'
+    },
+    {
+      id: 'e15',
+      code: [{text: 'items = 2'}, {text: 'while items > 0:'}, {text: '    print("Sell")'}, {text: '    ', isSlot: true, answer: 'items -= 1'}],
+      options: ['items -= 1', 'items += 1', 'items = 0', 'pass'],
+      output: 'Sell\nSell',
+      explanation: '簡單的庫存扣除邏輯。'
     }
   ],
   medium: [
+    // 1-5: 清單與 While
     {
       id: 'm1',
-      code: [
-        { text: 'cart = ["Apple", "Milk"]' },
-        { text: 'while ', isSlot: true, answer: 'len(cart) > 0', suffix: ':' },
-        { text: '    item = cart.pop()' },
-        { text: '    print("Bought", item)' }
-      ],
-      options: ['len(cart) > 0', 'cart == []', 'item in cart', 'len(cart) < 2'],
-      wrongFeedback: {
-        'cart == []': '一開始購物車有東西，所以「等於空列表」是 False，迴圈不會執行。',
-        'item in cart': 'item 變數在迴圈開始前還沒定義，這樣寫會報錯 (NameError)。',
-        'len(cart) < 2': '這個條件邏輯相反了，我們是要在「還有東西」的時候執行。'
-      },
-      output: 'Bought Milk\nBought Apple',
-      explanation: '這展示了如何用 while 迴圈處理清單：只要清單長度大於 0 (或寫 while cart:)，就不斷取出物品直到清空。'
+      code: [{text: 'data = [10, 20, 30]'}, {text: 'while ', isSlot: true, answer: 'len(data) > 0', suffix: ':'}, {text: '    print(data.pop())'}],
+      options: ['len(data) > 0', 'data == []', 'data > 0', 'True'],
+      output: '30\n20\n10',
+      explanation: '使用 pop() 遍歷並清空清單。'
     },
     {
       id: 'm2',
-      code: [
-        { text: 'n = 0' },
-        { text: 'while n < 4:' },
-        { text: '    n += 1' },
-        { text: '    if n % 2 == 1:' },
-        { text: '        ', isSlot: true, answer: 'continue' },
-        { text: '    print(n)' }
-      ],
-      options: ['continue', 'break', 'pass', 'n -= 1'],
-      wrongFeedback: {
-        'break': 'break 會直接停止迴圈，遇到第一個奇數 1 就停了，什麼都不會印出來。',
-        'pass': 'pass 會繼續往下執行，所以奇數也會被印出來 (1, 2, 3, 4)，不符合只印偶數的要求。',
-        'n -= 1': '在迴圈裡把 n 減回去，加上前面的 n += 1，n 的值會卡住不變，變成無限迴圈。'
-      },
-      output: '2\n4',
-      explanation: 'n % 2 == 1 代表是奇數。使用 continue 可以跳過本次迴圈剩下的 print 指令，只印出偶數。'
+      code: [{text: 'nums = [1, 5, 2]'}, {text: 'i = 0'}, {text: 'while i < len(nums):'}, {text: '    ', isSlot: true, answer: 'print(nums[i])'}, {text: '    i += 1'}],
+      options: ['print(nums[i])', 'print(i)', 'nums.pop()', 'break'],
+      output: '1\n5\n2',
+      explanation: '使用索引 (Index) 遍歷清單。'
     },
     {
       id: 'm3',
-      code: [
-        { text: 'money = 0' },
-        { text: 'goal = 30' },
-        { text: 'while ', isSlot: true, answer: 'money < goal', suffix: ':' },
-        { text: '    money += 10' },
-        { text: 'print("Rich!")' }
-      ],
-      options: ['money < goal', 'money > goal', 'money == goal', 'True'],
-      wrongFeedback: {
-        'money > goal': '一開始 0 不大於 30，條件為 False，迴圈不會執行，存不到錢。',
-        'money == goal': '0 不等於 30，條件為 False，直接結束。',
-        'True': '這會變成無限存款，永遠停不下來！'
-      },
-      output: 'Rich!',
-      explanation: '這是典型的「達成目標前持續執行」。只要錢還沒存夠 (小於目標)，就繼續存錢。'
+      code: [{text: 'a = []'}, {text: 'n = 1'}, {text: 'while n <= 3:'}, {text: '    ', isSlot: true, answer: 'a.append(n)'}, {text: '    n += 1'}],
+      options: ['a.append(n)', 'a = n', 'a + n', 'print(n)'],
+      output: '(a becomes [1, 2, 3])',
+      explanation: '在迴圈中建立清單資料 (append)。'
+    },
+    {
+      id: 'm4',
+      code: [{text: 's = "Python"'}, {text: 'i = 0'}, {text: 'while i < len(s):'}, {text: '    if s[i] == "h":'}, {text: '        ', isSlot: true, answer: 'break'}, {text: '    i += 1'}],
+      options: ['break', 'continue', 'print(s)', 'exit'],
+      output: '(Stops at "h")',
+      explanation: '在字串搜尋特定字元，找到後停止。'
+    },
+    {
+      id: 'm5',
+      code: [{text: 'n = 10'}, {text: 'while n > 0:'}, {text: '    if n == 5:'}, {text: '        n -= 1'}, {text: '        ', isSlot: true, answer: 'continue'}, {text: '    print(n)'}, {text: '    n -= 1'}],
+      options: ['continue', 'break', 'pass', 'n = 0'],
+      output: '10...6\n4...1',
+      explanation: '跳過特定數字 (5)，注意在 continue 前要記得變更計數器以免死迴圈。'
+    },
+    // 6-10: 數學與邏輯運算
+    {
+      id: 'm6',
+      code: [{text: 'n = 1'}, {text: 'while n < 20:'}, {text: '    print(n)'}, {text: '    ', isSlot: true, answer: 'n = n * 2'}],
+      options: ['n = n * 2', 'n += 2', 'n = n * n', 'n += 1'],
+      output: '1\n2\n4\n8\n16',
+      explanation: '指數增長 (2的次方) 迴圈。'
+    },
+    {
+      id: 'm7',
+      code: [{text: 'a, b = 0, 1'}, {text: 'while a < 10:'}, {text: '    print(a)'}, {text: '    ', isSlot: true, answer: 'a, b = b, a + b'}],
+      options: ['a, b = b, a + b', 'a = b', 'b = a + b', 'a += b'],
+      output: '0\n1\n1\n2\n3\n5\n8',
+      explanation: '費氏數列 (Fibonacci) 生成。'
+    },
+    {
+      id: 'm8',
+      code: [{text: 'x = 123'}, {text: 'while x > 0:'}, {text: '    digit = x % 10'}, {text: '    print(digit)'}, {text: '    ', isSlot: true, answer: 'x = x // 10'}],
+      options: ['x = x // 10', 'x = x / 10', 'x -= 10', 'x % 10'],
+      output: '3\n2\n1',
+      explanation: '拆解數字的每一位數 (整除 10)。'
+    },
+    {
+      id: 'm9',
+      code: [{text: 'n = 13'}, {text: 'd = 2'}, {text: 'while d < n:'}, {text: '    if n % d == 0:'}, {text: '        print("Not Prime")'}, {text: '        break'}, {text: '    ', isSlot: true, answer: 'd += 1'}],
+      options: ['d += 1', 'n += 1', 'd = 2', 'continue'],
+      output: '(Nothing printed)',
+      explanation: '質數檢查邏輯 (試除法)。'
+    },
+    {
+      id: 'm10',
+      code: [{text: 'total = 0'}, {text: 'i = 1'}, {text: 'while i <= 5:'}, {text: '    if i % 2 == 0:'}, {text: '        ', isSlot: true, answer: 'total += i'}, {text: '    i += 1'}],
+      options: ['total += i', 'total = i', 'total += 1', 'print(i)'],
+      output: '(total becomes 6)',
+      explanation: '只累加偶數 (2+4)。'
+    },
+    // 11-15: IF/ELSE 與流程控制
+    {
+      id: 'm11',
+      code: [{text: 'x = 0'}, {text: 'while x < 3:'}, {text: '    if x == 1:'}, {text: '        print("One")'}, {text: '    else:'}, {text: '        ', isSlot: true, answer: 'print("Not One")'}, {text: '    x += 1'}],
+      options: ['print("Not One")', 'break', 'x = 0', 'continue'],
+      output: 'Not One\nOne\nNot One',
+      explanation: 'While 迴圈內的 If-Else 結構。'
+    },
+    {
+      id: 'm12',
+      code: [{text: 'fuel = 5'}, {text: 'while fuel > 0:'}, {text: '    if fuel <= 2:'}, {text: '        print("Low")'}, {text: '    ', isSlot: true, answer: 'fuel -= 1'}],
+      options: ['fuel -= 1', 'fuel += 1', 'break', 'pass'],
+      output: 'Low\nLow',
+      explanation: '低油量警示系統邏輯。'
+    },
+    {
+      id: 'm13',
+      code: [{text: 'x = 0'}, {text: 'while x < 5:'}, {text: '    x += 1'}, {text: 'else:'}, {text: '    ', isSlot: true, answer: 'print("Done")'}],
+      options: ['print("Done")', 'break', 'continue', 'x = 0'],
+      output: 'Done',
+      explanation: 'While-Else 語法：迴圈正常結束後執行 Else。'
+    },
+    {
+      id: 'm14',
+      code: [{text: 'n = 100'}, {text: 'while n > 1:'}, {text: '    if n % 2 == 0:'}, {text: '        ', isSlot: true, answer: 'n = n // 2'}, {text: '    else:'}, {text: '        n = 3 * n + 1'}],
+      options: ['n = n // 2', 'n = n - 1', 'n = 0', 'break'],
+      output: '(Collatz logic)',
+      explanation: 'Collatz 猜想的偶數處理分支。'
+    },
+    {
+      id: 'm15',
+      code: [{text: 'i = 0'}, {text: 'while i < 3:'}, {text: '    if i != 1:'}, {text: '        print(i)'}, {text: '    ', isSlot: true, answer: 'i += 1'}],
+      options: ['i += 1', 'i -= 1', 'break', 'continue'],
+      output: '0\n2',
+      explanation: '印出不等於 1 的數字。'
     }
   ],
   hard: [
+    // 1-5: 巢狀 IF
     {
       id: 'h1',
-      code: [
-        { text: 'n = 5' },
-        { text: 'fact = 1' },
-        { text: 'while n > 0:' },
-        { text: '    ', isSlot: true, answer: 'fact *= n' },
-        { text: '    n -= 1' }
-      ],
-      options: ['fact *= n', 'fact += n', 'n *= fact', 'fact = n'],
-      wrongFeedback: {
-        'fact += n': '這是累加 (Summation)，不是階乘 (Factorial)。階乘需要用乘法。',
-        'n *= fact': '我們是要計算 fact，不是改變 n 的縮放方式。',
-        'fact = n': '這樣會覆蓋掉 fact 之前累積的值，最後結果只會等於 1。'
-      },
-      output: '120',
-      explanation: '階乘 (Factorial) 是連乘積。fact *= n 等同於 fact = fact * n，這是累積乘積的標準寫法。'
+      code: [{text: 'x = 0'}, {text: 'while x < 3:'}, {text: '    if x > 0:'}, {text: '        if x % 2 == 0:'}, {text: '            ', isSlot: true, answer: 'print("Even")'}, {text: '    x += 1'}],
+      options: ['print("Even")', 'print("Odd")', 'break', 'x = 0'],
+      output: 'Even',
+      explanation: '巢狀 IF：大於 0 且是偶數 (x=2)。'
     },
     {
       id: 'h2',
-      code: [
-        { text: 'n = 6' },
-        { text: 'while ', isSlot: true, answer: 'n != 1', suffix: ':' },
-        { text: '    if n % 2 == 0:' },
-        { text: '        n = n // 2' },
-        { text: '    else:' },
-        { text: '        n = 3 * n + 1' }
-      ],
-      options: ['n != 1', 'n > 10', 'n == 1', 'n % 2 == 0'],
-      wrongFeedback: {
-        'n > 10': '6 不大於 10，迴圈連一次都不會跑。',
-        'n == 1': '6 不等於 1，條件為 False，直接結束。',
-        'n % 2 == 0': '這只能保證 n 是偶數時執行，但 Collatz 猜想過程中 n 會變成奇數，這時迴圈就會意外中斷。'
-      },
-      output: '(Loops until n is 1)',
-      explanation: 'Collatz 猜想：如果是偶數除以 2，奇數乘 3 加 1，最終都會回到 1。所以迴圈條件是「只要不等於 1 就繼續」。'
+      code: [{text: 'n = 10'}, {text: 'while n > 0:'}, {text: '    if n > 5:'}, {text: '        if n == 8:'}, {text: '            ', isSlot: true, answer: 'break'}, {text: '    n -= 1'}],
+      options: ['break', 'continue', 'n = 10', 'print(n)'],
+      output: '(Stops at 8)',
+      explanation: '深層巢狀條件觸發 Break。'
     },
     {
       id: 'h3',
-      code: [
-        { text: 's = "ABC"' },
-        { text: 'i = len(s) - 1' },
-        { text: 'while i >= 0:' },
-        { text: '    print(s[i])' },
-        { text: '    ', isSlot: true, answer: 'i -= 1' }
-      ],
-      options: ['i -= 1', 'i += 1', 'i = 0', 'break'],
-      wrongFeedback: {
-        'i += 1': 'i 會變大 (2, 3, 4...)，超過字串長度會發生 IndexError (索引錯誤)！',
-        'i = 0': '這會造成死循環，而且邏輯上無法遍歷前面的字元。',
-        'break': '印出最後一個字元 "C" 後就結束了，無法印出 "B" 和 "A"。'
-      },
-      output: 'C\nB\nA',
-      explanation: '我們要從字串尾端往前讀取，所以索引變數 i 必須每次遞減，直到小於 0 為止。'
+      code: [{text: 'user = "admin"'}, {text: 'pw = "1234"'}, {text: 'tries = 0'}, {text: 'while tries < 3:'}, {text: '    if input() == user:'}, {text: '        if input() == pw:'}, {text: '            ', isSlot: true, answer: 'break'}, {text: '    tries += 1'}],
+      options: ['break', 'continue', 'tries = 0', 'return'],
+      output: '(Login logic)',
+      explanation: '模擬登入：帳號正確且密碼正確才跳出。'
+    },
+    {
+      id: 'h4',
+      code: [{text: 'x = 0'}, {text: 'while x < 5:'}, {text: '    if x % 2 == 0:'}, {text: '        if x != 0:'}, {text: '            print(x)'}, {text: '    ', isSlot: true, answer: 'x += 1'}],
+      options: ['x += 1', 'x += 2', 'break', 'pass'],
+      output: '2\n4',
+      explanation: '排除 0 的偶數列印。'
+    },
+    {
+      id: 'h5',
+      code: [{text: 'score = 60'}, {text: 'while score < 100:'}, {text: '    if score >= 80:'}, {text: '        if score >= 90:'}, {text: '            print("A")'}, {text: '        else:'}, {text: '            ', isSlot: true, answer: 'print("B")'}, {text: '    score += 10'}],
+      options: ['print("B")', 'print("C")', 'break', 'score = 0'],
+      output: 'B\nA',
+      explanation: '成績分級判斷邏輯 (80分B, 90分A)。'
+    },
+    // 6-10: 演算法邏輯
+    {
+      id: 'h6',
+      code: [{text: 'low, high = 0, 10'}, {text: 'target = 5'}, {text: 'while ', isSlot: true, answer: 'low <= high', suffix: ':'}, {text: '    mid = (low+high)//2'}, {text: '    if mid == target: break'}, {text: '    low = mid + 1'}],
+      options: ['low <= high', 'low < high', 'low == high', 'True'],
+      output: '(Binary Search)',
+      explanation: '二分搜尋法的迴圈條件。'
+    },
+    {
+      id: 'h7',
+      code: [{text: 'a, b = 48, 18'}, {text: 'while b:'}, {text: '    ', isSlot: true, answer: 'a, b = b, a % b'}, {text: 'print(a)'}],
+      options: ['a, b = b, a % b', 'a = a - b', 'b = b - 1', 'a = b'],
+      output: '6',
+      explanation: '輾轉相除法求最大公因數 (GCD)。'
+    },
+    {
+      id: 'h8',
+      code: [{text: 's = "radar"'}, {text: 'l, r = 0, len(s)-1'}, {text: 'is_pal = True'}, {text: 'while l < r:'}, {text: '    if s[l] != s[r]:'}, {text: '        is_pal = False; break'}, {text: '    ', isSlot: true, answer: 'l += 1; r -= 1'}],
+      options: ['l += 1; r -= 1', 'l -= 1; r += 1', 'l += 1', 'r -= 1'],
+      output: '(True)',
+      explanation: '雙指標 (Two Pointers) 檢查迴文。'
+    },
+    {
+      id: 'h9',
+      code: [{text: 'n = 5'}, {text: 'fact = 1'}, {text: 'while n > 0:'}, {text: '    ', isSlot: true, answer: 'fact *= n'}, {text: '    n -= 1'}],
+      options: ['fact *= n', 'fact += n', 'n *= fact', 'fact = n'],
+      output: '120',
+      explanation: '階乘計算。'
+    },
+    {
+      id: 'h10',
+      code: [{text: 'lst = [3, 1, 4, 1, 5]'}, {text: 'i = 0'}, {text: 'max_v = lst[0]'}, {text: 'while i < len(lst):'}, {text: '    if lst[i] > max_v:'}, {text: '        ', isSlot: true, answer: 'max_v = lst[i]'}, {text: '    i += 1'}],
+      options: ['max_v = lst[i]', 'max_v += 1', 'lst[i] = max_v', 'break'],
+      output: '5',
+      explanation: '尋找陣列最大值邏輯。'
+    },
+    // 11-15: 複雜字串與清單
+    {
+      id: 'h11',
+      code: [{text: 's = "A1B2"'}, {text: 'i = 0'}, {text: 'nums = ""'}, {text: 'while i < len(s):'}, {text: '    if s[i].isdigit():'}, {text: '        ', isSlot: true, answer: 'nums += s[i]'}, {text: '    i += 1'}],
+      options: ['nums += s[i]', 'nums = s[i]', 'print(s[i])', 'break'],
+      output: '12',
+      explanation: '提取字串中的數字字元。'
+    },
+    {
+      id: 'h12',
+      code: [{text: 'stack = []'}, {text: 's = "(()"'}, {text: 'i = 0'}, {text: 'while i < len(s):'}, {text: '    if s[i] == "(": stack.append(1)'}, {text: '    elif s[i] == ")":'}, {text: '        ', isSlot: true, answer: 'if stack: stack.pop()'}, {text: '    i += 1'}],
+      options: ['if stack: stack.pop()', 'stack.append(0)', 'break', 'pass'],
+      output: '(Stack logic)',
+      explanation: '括號匹配邏輯：遇到右括號時彈出堆疊，需先檢查堆疊是否為空 (巢狀IF簡寫)。'
+    },
+    {
+      id: 'h13',
+      code: [{text: 'm = [[1,2],[3,4]]'}, {text: 'r = 0'}, {text: 'while r < 2:'}, {text: '    c = 0'}, {text: '    while c < 2:'}, {text: '        print(m[r][c])'}, {text: '        ', isSlot: true, answer: 'c += 1'}, {text: '    r += 1'}],
+      options: ['c += 1', 'r += 1', 'c = 0', 'break'],
+      output: '1\n2\n3\n4',
+      explanation: '巢狀 While 迴圈遍歷二維陣列。'
+    },
+    {
+      id: 'h14',
+      code: [{text: 'n = 123'}, {text: 'rev = 0'}, {text: 'while n > 0:'}, {text: '    rev = rev * 10 + n % 10'}, {text: '    ', isSlot: true, answer: 'n //= 10'}],
+      options: ['n //= 10', 'n %= 10', 'n -= 10', 'rev += 1'],
+      output: '321',
+      explanation: '整數反轉算法：取餘數加到新數，原數整除。'
+    },
+    {
+      id: 'h15',
+      code: [{text: 'n = 100'}, {text: 'while n >= 10:'}, {text: '    sum_d = 0'}, {text: '    temp = n'}, {text: '    while temp > 0:'}, {text: '        sum_d += temp % 10'}, {text: '        temp //= 10'}, {text: '    ', isSlot: true, answer: 'n = sum_d'}],
+      options: ['n = sum_d', 'n -= 1', 'break', 'n = 0'],
+      output: '(Digital Root)',
+      explanation: '數字根 (Digital Root) 計算：重複計算位數和直到剩一位數。'
     }
   ]
 };
 
+// 隨機選題函數：從 15 題中取 5 題
 const getRandomQuestions = (difficulty) => {
   const pool = QUESTION_BANK[difficulty];
-  let selected = [];
-  while (selected.length < 5) {
-    const randomQ = pool[Math.floor(Math.random() * pool.length)];
-    const qCopy = JSON.parse(JSON.stringify(randomQ));
-    qCopy.currentSlotValue = null; 
-    qCopy.shuffledOptions = [...qCopy.options].sort(() => Math.random() - 0.5);
-    selected.push(qCopy);
-  }
+  const shuffled = [...pool].sort(() => 0.5 - Math.random());
+  
+  const selected = shuffled.slice(0, 5).map(q => {
+     const qCopy = JSON.parse(JSON.stringify(q));
+     qCopy.currentSlotValue = null;
+     qCopy.shuffledOptions = [...qCopy.options].sort(() => Math.random() - 0.5);
+     // 確保每題初始是未失敗狀態
+     qCopy.hasFailed = false; 
+     return qCopy;
+  });
+  
   return selected;
 };
 
@@ -195,20 +363,14 @@ export default function App() {
   const [feedback, setFeedback] = useState(null); 
   const [userName, setUserName] = useState('');
   
-  // Drag and Drop States
   const [draggedItem, setDraggedItem] = useState(null);
-  
-  // Touch Drag State (Mobile)
   const [touchDrag, setTouchDrag] = useState({ active: false, x: 0, y: 0, item: null });
-
   const [isTailwindLoaded, setIsTailwindLoaded] = useState(false);
 
-  // --- 新增：解鎖狀態 (從 localStorage 讀取) ---
   const [unlockedLevels, setUnlockedLevels] = useState(() => {
     try {
       if (typeof window !== 'undefined') {
         const saved = localStorage.getItem('python_master_unlocked');
-        // 預設解鎖 easy
         return saved ? JSON.parse(saved) : ['easy'];
       }
     } catch (e) {
@@ -217,7 +379,6 @@ export default function App() {
     return ['easy'];
   });
 
-  // --- 新增：當 unlockedLevels 改變時寫入 localStorage ---
   useEffect(() => {
     try {
         localStorage.setItem('python_master_unlocked', JSON.stringify(unlockedLevels));
@@ -233,7 +394,6 @@ export default function App() {
     const finishLoading = () => {
       const elapsedTime = Date.now() - startTime;
       const remainingTime = Math.max(0, minLoadTime - elapsedTime);
-      
       setTimeout(() => {
         setIsTailwindLoaded(true);
       }, remainingTime);
@@ -254,9 +414,7 @@ export default function App() {
       script.async = true;
       document.head.appendChild(script);
     }
-
     script.addEventListener('load', finishLoading);
-
     return () => {
       script.removeEventListener('load', finishLoading);
     };
@@ -264,16 +422,14 @@ export default function App() {
 
   const customStyles = `
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
-    
     body {
       font-family: 'Noto Sans TC', sans-serif;
       background-color: #0f172a; 
       color: white;
       margin: 0;
       padding: 0;
-      overflow-x: hidden; /* 防止手機左右滑動 */
+      overflow-x: hidden;
     }
-    
     @keyframes fade-in {
       from { opacity: 0; transform: translateY(10px); }
       to { opacity: 1; transform: translateY(0); }
@@ -281,8 +437,6 @@ export default function App() {
     .animate-fade-in {
       animation: fade-in 0.5s ease-out forwards;
     }
-    
-    /* 鎖頭晃動動畫 */
     @keyframes shake {
       0%, 100% { transform: translateX(0); }
       25% { transform: translateX(-5px); }
@@ -294,9 +448,7 @@ export default function App() {
   `;
 
   const startGame = (diff) => {
-    // 防止啟動未解鎖的難度
     if (!unlockedLevels.includes(diff)) return;
-
     setDifficulty(diff);
     setQuestions(getRandomQuestions(diff));
     setCurrentQIndex(0);
@@ -314,24 +466,45 @@ export default function App() {
     currentQ.currentSlotValue = optionText;
     setQuestions(updatedQuestions);
     
+    // 如果之前是錯誤狀態，現在填了新的，就清除錯誤訊息
     if (feedback && feedback.type === 'error') {
         setFeedback(null);
     }
   };
 
+  // --- 核心修改：計分邏輯 ---
   const checkAnswer = () => {
-    const currentQ = questions[currentQIndex];
+    const updatedQuestions = [...questions];
+    const currentQ = updatedQuestions[currentQIndex];
     const slot = currentQ.code.find(p => p.isSlot);
     const userAns = currentQ.currentSlotValue;
     
     if (userAns === slot.answer) {
+      // 答對了
+      let pointsToAdd = 0;
+      let msg = '正確！+20分';
+
+      // 檢查是否曾經失敗過
+      if (currentQ.hasFailed) {
+        pointsToAdd = 0;
+        msg = '正確！(重試不加分)';
+      } else {
+        pointsToAdd = 20;
+      }
+
+      setScore(prev => prev + pointsToAdd);
       setFeedback({ 
           type: 'success', 
-          msg: '執行成功！邏輯正確。', 
+          msg: msg, 
           output: currentQ.output 
       });
-      setScore(prev => prev + 20);
+
     } else {
+      // 答錯了
+      // 標記此題為失敗過
+      currentQ.hasFailed = true;
+      setQuestions(updatedQuestions);
+
       const specificError = currentQ.wrongFeedback && currentQ.wrongFeedback[userAns];
       const errorMsg = specificError || '語法或邏輯錯誤，請再試一次！';
       
@@ -349,9 +522,6 @@ export default function App() {
       setFeedback(null);
     } else {
       setGameState('finished');
-      
-      // --- 新增：通關解鎖邏輯 ---
-      // 只要完成關卡（到達這裡表示已完成5題），就解鎖下一級
       if (difficulty === 'easy' && !unlockedLevels.includes('medium')) {
           setUnlockedLevels(prev => [...prev, 'medium']);
       } else if (difficulty === 'medium' && !unlockedLevels.includes('hard')) {
@@ -366,6 +536,11 @@ export default function App() {
       const correctAns = currentQ.code.find(p => p.isSlot).answer;
       handleSlotFill(correctAns);
       setHints(prev => prev - 1);
+      
+      // 使用提示不算失敗，但如果之前沒失敗過，使用提示後直接給答案通常會讓這題變簡單
+      // 這裡維持原本邏輯：提示只是填入答案，使用者還是要按執行。
+      // 如果想要「使用提示也不給分」，可以在這裡設定 hasFailed = true
+      
       setFeedback(null);
     }
   };
@@ -390,21 +565,16 @@ export default function App() {
 
   const handleTouchEnd = (e) => {
     if (!touchDrag.active) return;
-    
     const touch = e.changedTouches[0];
     const elements = document.elementsFromPoint(touch.clientX, touch.clientY);
-    
     const slotElement = elements.find(el => el.getAttribute('data-type') === 'slot');
-    
     if (slotElement) {
         handleSlotFill(touchDrag.item);
     }
-    
     setTouchDrag({ active: false, x: 0, y: 0, item: null });
     setDraggedItem(null);
   };
 
-  // --- 載入畫面 ---
   if (!isTailwindLoaded) {
     return (
       <div style={{
@@ -425,7 +595,6 @@ export default function App() {
         zIndex: 9999
       }}>
         <style>{`body { margin: 0; padding: 0; background-color: #0f172a; overflow: hidden; }`}</style>
-        
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
           <Loader2 style={{ animation: 'spin 1s linear infinite' }} />
           <span>載入資源中...</span>
@@ -440,7 +609,6 @@ export default function App() {
     );
   }
 
-  // --- 渲染內容選擇器 ---
   const renderContent = () => {
     if (gameState === 'menu') {
       return (
@@ -501,7 +669,6 @@ export default function App() {
               {score === 100 ? '太神了！完美的 Python 大師！' : '不錯的嘗試！再接再厲！'}
             </p>
             
-            {/* 新增：顯示解鎖訊息 */}
             {score > 0 && difficulty === 'easy' && !unlockedLevels.includes('medium') && (
                 <div className="mb-6 p-3 bg-yellow-500/20 border border-yellow-500/50 rounded-lg text-yellow-400 font-bold animate-pulse">
                     🎉 解鎖「中等」難度！
@@ -540,8 +707,6 @@ export default function App() {
                   返回主選單重試
                 </button>
             )}
-            
-            {/* 如果完成了但不是滿分，也提供返回按鈕 */}
             {score === 100 && (
                 <button
                   onClick={() => setGameState('menu')}
@@ -559,13 +724,11 @@ export default function App() {
       return <CertificateView userName={userName} score={score} onBack={() => setGameState('menu')} />;
     }
 
-    // gameState === 'playing'
     const currentQ = questions[currentQIndex];
     const isCorrect = feedback?.type === 'success';
 
     return (
       <div className="min-h-screen bg-slate-900 text-slate-200 flex flex-col items-center p-4">
-        {/* Mobile Drag Ghost Element */}
         {touchDrag.active && (
             <div style={{
                 position: 'fixed',
@@ -606,19 +769,15 @@ export default function App() {
         </div>
 
         <div className="w-full max-w-2xl bg-slate-800 rounded-2xl shadow-2xl overflow-hidden border border-slate-700 flex flex-col">
-          
-          {/* Code Editor */}
           <div className="bg-[#1e1e1e] p-6 font-mono text-lg overflow-x-auto border-b border-slate-700 relative">
               <div className="absolute top-2 right-2 text-xs text-slate-500">main.py</div>
               {currentQ.code.map((line, idx) => (
                   <div key={idx} className="flex items-center py-1 whitespace-pre">
                       <span className="text-slate-600 w-8 select-none text-right mr-4">{idx + 1}</span>
-                      
                       <span className="text-slate-300">{line.text}</span>
-
                       {line.isSlot && (
                           <div 
-                              data-type="slot" // 關鍵：用於觸控放開時的偵測
+                              data-type="slot"
                               onDragOver={(e) => e.preventDefault()}
                               onDrop={(e) => {
                                   e.preventDefault();
@@ -642,13 +801,11 @@ export default function App() {
                               {currentQ.currentSlotValue || "?"}
                           </div>
                       )}
-
                       {line.suffix && <span className="text-slate-300">{line.suffix}</span>}
                   </div>
               ))}
           </div>
 
-          {/* Controls & Options */}
           <div className="p-6 bg-slate-800">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 min-h-[3.5rem]">
                   {feedback ? (
@@ -706,7 +863,6 @@ export default function App() {
                               draggable
                               onDragStart={() => setDraggedItem(opt)}
                               onClick={() => handleSlotFill(opt)}
-                              // 新增 Touch Events 支援手機拖曳
                               onTouchStart={(e) => handleTouchStart(e, opt)}
                               onTouchMove={handleTouchMove}
                               onTouchEnd={handleTouchEnd}
@@ -771,56 +927,40 @@ function CertificateView({ userName, score, onBack }) {
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     
-    // Background
     ctx.fillStyle = '#fff';
     ctx.fillRect(0, 0, 800, 600);
-    
-    // Border
     ctx.lineWidth = 10;
     ctx.strokeStyle = '#DAA520';
     ctx.strokeRect(20, 20, 760, 560);
     ctx.lineWidth = 2;
     ctx.strokeRect(35, 35, 730, 530);
-
-    // Corners
     ctx.fillStyle = '#DAA520';
     ctx.fillRect(20, 20, 50, 50);
     ctx.fillRect(730, 20, 50, 50);
     ctx.fillRect(20, 530, 50, 50);
     ctx.fillRect(730, 530, 50, 50);
-
-    // Title
     ctx.font = 'bold 50px "Noto Sans TC", "Microsoft JhengHei", sans-serif'; 
     ctx.fillStyle = '#333';
     ctx.textAlign = 'center';
     ctx.fillText('榮 譽 證 書', 400, 150);
-
-    // Body
     ctx.font = '24px sans-serif';
     ctx.fillStyle = '#555';
     ctx.fillText('茲證明', 400, 240);
-
     ctx.font = 'bold 40px sans-serif';
     ctx.fillStyle = '#1e3a8a'; 
     ctx.fillText(userName, 400, 300);
-
     ctx.font = '24px sans-serif';
     ctx.fillStyle = '#555';
     ctx.fillText('成功通過 Python While 迴圈大師測驗', 400, 360);
     ctx.fillText('獲得滿分表現', 400, 400);
-
-    // Score
     ctx.font = 'bold 60px sans-serif';
     ctx.fillStyle = '#DAA520';
     ctx.fillText(`${score} 分`, 400, 480);
-
-    // Date
     const date = new Date().toLocaleDateString();
     ctx.font = '16px sans-serif';
     ctx.fillStyle = '#888';
     ctx.textAlign = 'right';
     ctx.fillText(`Date: ${date}`, 730, 530);
-
   }, [userName, score]);
 
   const downloadCertificate = () => {
@@ -836,27 +976,14 @@ function CertificateView({ userName, score, onBack }) {
       <h2 className="text-2xl font-bold mb-4 text-yellow-400 flex items-center gap-2">
         <Award /> 您的證書已生成
       </h2>
-      
       <div className="mb-6 shadow-2xl border-4 border-slate-700 rounded-lg overflow-hidden max-w-full">
-         <canvas 
-            ref={canvasRef} 
-            width={800} 
-            height={600} 
-            className="w-full max-w-[600px] h-auto bg-white"
-         />
+         <canvas ref={canvasRef} width={800} height={600} className="w-full max-w-[600px] h-auto bg-white" />
       </div>
-
       <div className="flex gap-4">
-        <button
-          onClick={onBack}
-          className="px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg font-bold flex items-center gap-2 transition"
-        >
+        <button onClick={onBack} className="px-6 py-2 bg-slate-700 hover:bg-slate-600 rounded-lg font-bold flex items-center gap-2 transition">
           <RotateCcw size={18} /> 返回
         </button>
-        <button
-          onClick={downloadCertificate}
-          className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-slate-900 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-yellow-500/20 transition"
-        >
+        <button onClick={downloadCertificate} className="px-6 py-2 bg-yellow-500 hover:bg-yellow-400 text-slate-900 rounded-lg font-bold flex items-center gap-2 shadow-lg shadow-yellow-500/20 transition">
           <Download size={18} /> 下載證書
         </button>
       </div>
