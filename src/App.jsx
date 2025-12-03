@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Play, RotateCcw, HelpCircle, Trophy, CheckCircle, XCircle, Award, Download, ChevronRight, Code, AlertTriangle } from 'lucide-react';
+import { Play, RotateCcw, HelpCircle, Trophy, CheckCircle, XCircle, Award, Download, ChevronRight, Code, AlertTriangle, Loader2 } from 'lucide-react';
 
 // --- 題庫資料 (Python While Loop) ---
 const QUESTION_BANK = {
@@ -197,20 +197,58 @@ export default function App() {
   const [feedback, setFeedback] = useState(null); 
   const [userName, setUserName] = useState('');
   const [draggedItem, setDraggedItem] = useState(null);
+  const [isTailwindLoaded, setIsTailwindLoaded] = useState(false);
 
-  // --- Style Injection ---
-  // 這段 useEffect 會自動注入 Tailwind CSS，解決你清空 CSS 檔後樣式消失的問題
+  // --- Style Injection with Loading State ---
+  // 修正：增加載入狀態監測，確保 Tailwind 載入完畢才顯示畫面
   useEffect(() => {
-    // 檢查是否已經注入過
-    if (!document.getElementById('tailwind-cdn')) {
-      const script = document.createElement('script');
-      script.id = 'tailwind-cdn';
+    // 如果 window.tailwind 已經存在，表示已經載入過
+    if (window.tailwind) {
+      setIsTailwindLoaded(true);
+      return;
+    }
+
+    const scriptId = 'tailwind-cdn';
+    let script = document.getElementById(scriptId);
+
+    if (!script) {
+      script = document.createElement('script');
+      script.id = scriptId;
       script.src = "https://cdn.tailwindcss.com";
       script.async = true;
       document.head.appendChild(script);
     }
+
+    // 監聽載入完成事件
+    const handleLoad = () => setIsTailwindLoaded(true);
+    script.addEventListener('load', handleLoad);
+
+    return () => {
+      script.removeEventListener('load', handleLoad);
+    };
   }, []);
 
+  // 自定義樣式 (字體、動畫)
+  const customStyles = `
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
+    
+    body {
+      font-family: 'Noto Sans TC', sans-serif;
+      background-color: #0f172a; 
+      color: white;
+      margin: 0;
+    }
+    
+    @keyframes fade-in {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-fade-in {
+      animation: fade-in 0.5s ease-out forwards;
+    }
+  `;
+
+  // --- 遊戲邏輯函數 ---
   const startGame = (diff) => {
     setDifficulty(diff);
     setQuestions(getRandomQuestions(diff));
@@ -277,30 +315,38 @@ export default function App() {
     }
   };
 
-  // --- Render Custom Styles ---
-  // 定義自定義動畫和字型，因為你清空了 index.css
-  const customStyles = `
-    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;700&display=swap');
-    
-    body {
-      font-family: 'Noto Sans TC', sans-serif;
-      background-color: #0f172a; /* 確保背景色即使 tailwind 沒載入也不會全白 */
-      color: white;
-    }
-    
-    @keyframes fade-in {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fade-in {
-      animation: fade-in 0.5s ease-out forwards;
-    }
-  `;
-
-  if (gameState === 'menu') {
+  // --- 載入畫面 (防止白畫面閃爍) ---
+  if (!isTailwindLoaded) {
     return (
-      <>
-        <style>{customStyles}</style>
+      <div style={{
+        backgroundColor: '#0f172a',
+        height: '100vh',
+        width: '100vw',
+        display: 'flex',
+        flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: 'center',
+        color: 'white',
+        fontFamily: 'sans-serif'
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <Loader2 style={{ animation: 'spin 1s linear infinite' }} />
+          <span>載入資源中...</span>
+        </div>
+        <style>{`
+          @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // --- 渲染內容選擇器 ---
+  const renderContent = () => {
+    if (gameState === 'menu') {
+      return (
         <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4">
           <div className="max-w-md w-full bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700 text-center">
             <Code className="w-16 h-16 mx-auto text-yellow-400 mb-4" />
@@ -326,14 +372,11 @@ export default function App() {
             </div>
           </div>
         </div>
-      </>
-    );
-  }
+      );
+    }
 
-  if (gameState === 'finished') {
-    return (
-      <>
-        <style>{customStyles}</style>
+    if (gameState === 'finished') {
+      return (
         <div className="min-h-screen bg-slate-900 text-white flex flex-col items-center justify-center p-4">
           <div className="max-w-md w-full bg-slate-800 p-8 rounded-2xl shadow-2xl border border-slate-700 text-center">
             <Trophy className={`w-20 h-20 mx-auto mb-6 ${score === 100 ? 'text-yellow-400 animate-bounce' : 'text-slate-500'}`} />
@@ -373,25 +416,18 @@ export default function App() {
             )}
           </div>
         </div>
-      </>
-    );
-  }
+      );
+    }
 
-  if (gameState === 'certificate') {
+    if (gameState === 'certificate') {
+      return <CertificateView userName={userName} score={score} onBack={() => setGameState('menu')} />;
+    }
+
+    // gameState === 'playing'
+    const currentQ = questions[currentQIndex];
+    const isCorrect = feedback?.type === 'success';
+
     return (
-      <>
-        <style>{customStyles}</style>
-        <CertificateView userName={userName} score={score} onBack={() => setGameState('menu')} />
-      </>
-    );
-  }
-
-  const currentQ = questions[currentQIndex];
-  const isCorrect = feedback?.type === 'success';
-
-  return (
-    <>
-      <style>{customStyles}</style>
       <div className="min-h-screen bg-slate-900 text-slate-200 flex flex-col items-center p-4">
         <div className="w-full max-w-2xl flex justify-between items-center mb-6 bg-slate-800 p-4 rounded-xl border border-slate-700">
           <div className="flex items-center gap-4">
@@ -559,6 +595,13 @@ export default function App() {
           )}
         </div>
       </div>
+    );
+  };
+
+  return (
+    <>
+      <style>{customStyles}</style>
+      {renderContent()}
     </>
   );
 }
@@ -589,7 +632,6 @@ function CertificateView({ userName, score, onBack }) {
     ctx.fillRect(730, 530, 50, 50);
 
     // Title
-    // 使用通用字體作為備案，以防 Noto Sans TC 尚未載入
     ctx.font = 'bold 50px "Noto Sans TC", "Microsoft JhengHei", sans-serif'; 
     ctx.fillStyle = '#333';
     ctx.textAlign = 'center';
